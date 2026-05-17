@@ -747,12 +747,9 @@ I'll help you fix the HuggingFace API 404 error. Let me start by gathering infor
 <file><path>.env</path>
 <content lines="1-36">
  1 | # IBM watsonx.ai Configuration
- 2 | WATSONX_API_KEY= EM55g-2RlHeiDsaJkv_kv07J0bsZDJRB7UrdJbzsWCzv
  3 | WATSONX_PROJECT_ID= 0afc6e23-95bb-4181-8c21-4b69690a29ea
  4 | WATSONX_URL= https://us-south.ml.cloud.ibm.com
- 5 | 
- 6 | # Hugging Face (BioMistral)
- 7 | HF_API_TOKEN = [REDACTED_HUGGING_FACE_TOKEN]
+ 5 
  8 | 
  9 | # Application Settings
 10 | APP_NAME=Clinical AI Assistant - Symptom Analyzer
@@ -2255,7 +2252,7 @@ IMPORTANT: When task status changes, remember to call the `update_todo_list` too
 ### **Phase 1: Accept BioMistral Model License (Option 2)**
 
 #### **Step 1: Verify Your HuggingFace Token**
-Your token from `.env`: `[REDACTED_HUGGING_FACE_TOKEN]`
+Your token from `.env`: ``
 
 ✅ **Action Required:**
 1. Go to https://huggingface.co/settings/tokens
