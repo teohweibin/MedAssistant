@@ -4527,12 +4527,12 @@ I see the issue! The `.env` file is cached in memory. When you update the `.env`
 <file><path>.env</path>
 <content lines="1-10">
  1 | # IBM watsonx.ai Configuration
- 2 | WATSONX_API_KEY= EM55g-2RlHeiDsaJkv_kv07J0bsZDJRB7UrdJbzsWCzv
+ 2 
  3 | WATSONX_PROJECT_ID= 0afc6e23-95bb-4181-8c21-4b69690a29ea
  4 | WATSONX_URL= https://us-south.ml.cloud.ibm.com
  5 | 
  6 | # Hugging Face (BioMistral)
- 7 | HF_API_TOKEN = [REDACTED_HUGGING_FACE_TOKEN]
+ 7 |
  8 | 
  9 | # Application Settings
 10 | APP_NAME=Clinical AI Assistant - Symptom Analyzer
@@ -4586,7 +4586,7 @@ IMPORTANT: When task status changes, remember to call the `update_todo_list` too
 
 **Assistant:**
 
-Good! I can see you've updated the token to `[REDACTED_HUGGING_FACE_TOKEN]`. The issue is that Python caches the environment variables when the script first runs. 
+Good! I can see you've updated the token to ``. The issue is that Python caches the environment variables when the script first runs. 
 
 The solution is simple: **you need to restart your terminal or Python process** to pick up the new `.env` file values. However, I notice there's also a **space** in your `.env` file that might cause issues.
 
@@ -4654,11 +4654,10 @@ IMPORTANT: When task status changes, remember to call the `update_todo_list` too
 <path>.env</path>
 <diff>
 <<<<<<< SEARCH
-# Hugging Face (BioMistral)
-HF_API_TOKEN = [REDACTED_HUGGING_FACE_TOKEN]
+
 =======
 # Hugging Face (BioMistral)
-HF_API_TOKEN=[REDACTED_HUGGING_FACE_TOKEN]
+
 >>>>>>> REPLACE
 </diff>
 </apply_diff>
@@ -4849,7 +4848,7 @@ IMPORTANT: When task status changes, remember to call the `update_todo_list` too
 
 **Assistant:**
 
-The test is still showing the old token! This is because Python has cached the environment variables. The token preview shows `hf_oojYiggumYgg...eXoVMUhbji` (the old one) instead of `[REDACTED_HUGGING_FACE_TOKEN]` (the new one).
+The test is still showing the old token! This is because Python has cached the environment variables. The token preview shows (the new one).
 
 Let me create a simple script that forces a fresh reload:
 
