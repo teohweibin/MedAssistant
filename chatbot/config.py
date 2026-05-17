@@ -1,5 +1,14 @@
-import os
+<<<<<<< HEAD
+=======
+"""
+Chatbot Configuration (FIXED FOR HF INFERENCE STABILITY)
+"""
 
+>>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
+import os
+from dotenv import load_dotenv
+
+<<<<<<< HEAD
 # Groq Configuration
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_xxx')  
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
@@ -23,40 +32,71 @@ MAX_CONVERSATION_LENGTH = 20     # Maximum messages in history
 # =========================
 # UNSAFE QUERY PATTERNS (regex)
 # =========================
+=======
+load_dotenv()
+
+# HuggingFace
+HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
+HF_API_BASE_URL = "https://api-inference.huggingface.co/models"
+
+# ✅ Stable inference-safe models
+# BioMistral - Medical domain specialized model
+PRIMARY_MODEL = "BioMistral/BioMistral-7B"
+# Alternative medical models
+FALLBACK_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+
+# Model Parameters
+MODEL_TEMPERATURE = 0.3
+MAX_TOKENS = 500
+REQUEST_TIMEOUT = 40
+MAX_RETRIES = 2
+
+# Rate Limiting
+RATE_LIMIT_DELAY = 1.0
+
+# Safety thresholds
+CONFIDENCE_THRESHOLD = 0.70
+ESCALATION_THRESHOLD = 0.50
+MAX_CONVERSATION_LENGTH = 20
+
+# Unsafe patterns
+>>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 UNSAFE_PATTERNS = [
-    r'\b(stop|quit|discontinue|cease)\s+(taking|medication|medicine|drug|prescription)',
-    r'\b(diagnose|diagnosis|what\s+do\s+i\s+have|what\'s\s+wrong\s+with\s+me)',
-    r'\b(change|modify|adjust|increase|decrease)\s+(dose|dosage|medication|prescription)',
-    r'\b(instead\s+of|replace|substitute)\s+(medication|medicine|drug)',
-    r'\b(emergency|urgent|severe\s+pain|chest\s+pain|difficulty\s+breathing)',
+    r'\b(stop|quit|discontinue)\s+(taking|medication|drug)',
+    r'\b(diagnose|what\s+do\s+i\s+have|what\'s\s+wrong)',
+    r'\b(change|modify|adjust)\s+(dose|dosage|medication)',
+    r'\b(replace|substitute)\s+(medication|drug)',
+    r'\b(emergency|chest\s+pain|difficulty\s+breathing)',
 ]
 
+<<<<<<< HEAD
 # =========================
 # ESCALATION TRIGGERS
 # =========================
+=======
+>>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 ESCALATION_KEYWORDS = [
-    'emergency', 'urgent', 'severe', 'chest pain', 'difficulty breathing',
-    'unconscious', 'bleeding heavily', 'allergic reaction', 'overdose',
-    'suicidal', 'heart attack', 'stroke', 'seizure'
+    "emergency", "chest pain", "difficulty breathing",
+    "unconscious", "stroke", "seizure", "overdose"
 ]
 
+<<<<<<< HEAD
 # =========================
 # RESPONSE TEMPLATES
 # =========================
+=======
+# Messages
+>>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 ESCALATION_MESSAGE = (
-    "I'm unable to confidently answer this based on your medical records. "
-    "Please consult your doctor for medical advice."
+    "I'm unable to confidently answer this. Please consult a healthcare professional."
 )
 
 EMERGENCY_MESSAGE = (
-    "⚠️ This sounds like a medical emergency. Please call emergency services "
-    "immediately or go to the nearest emergency room. If you're experiencing "
-    "severe symptoms, do not wait."
+    "⚠️ Medical emergency detected. Please contact emergency services immediately."
 )
 
 UNSAFE_REQUEST_MESSAGE = (
-    "I cannot provide guidance on this matter as it involves medical decisions "
-    "that require professional consultation. Please speak with your doctor about: {topic}"
+    "I cannot assist with medical treatment decisions. Please consult your doctor regarding: {topic}"
 )
 
 # =========================
