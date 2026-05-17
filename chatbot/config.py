@@ -1,36 +1,28 @@
-"""
-Chatbot Configuration
-Settings for LLM, safety thresholds, and behavior
-"""
-
 import os
 
-# HuggingFace Configuration
-HF_API_TOKEN = os.environ.get('HF_API_TOKEN', '')  # Set via environment variable
-HF_API_BASE_URL = "https://api-inference.huggingface.co/models"
+# Groq Configuration
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_xxx')  
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
-# Medical Models on HuggingFace
-# BioMistral - Medical domain specialized model
-PRIMARY_MODEL = "BioMistral/BioMistral-7B"
-# Alternative medical models
-FALLBACK_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
-# Other options: "epfl-llm/meditron-7b", "microsoft/BioGPT-Large"
+PRIMARY_MODEL = "qwen/qwen3-32b"        
+FALLBACK_MODEL = "qwen/qwen3-32b"     
 
-# Model Parameters
-MODEL_TEMPERATURE = 0.3          # Lower = more conservative/factual
-MAX_TOKENS = 500                 # Maximum response length
-REQUEST_TIMEOUT = 30             # API request timeout in seconds
-MAX_RETRIES = 2                  # Number of retries on API failure
+MODEL_TEMPERATURE = 0.3
+MAX_TOKENS = 300
+REQUEST_TIMEOUT = 20
+MAX_RETRIES = 2
+RATE_LIMIT_DELAY = 0.5  # Groq is FAST
 
-# Rate Limiting
-RATE_LIMIT_DELAY = 1.0          # Delay between requests in seconds
-
-# Safety Thresholds
+# =========================
+# SAFETY THRESHOLDS
+# =========================
 CONFIDENCE_THRESHOLD = 0.70      # Minimum confidence to provide answer
 ESCALATION_THRESHOLD = 0.50      # Below this, escalate to doctor
 MAX_CONVERSATION_LENGTH = 20     # Maximum messages in history
 
-# Unsafe Query Patterns (regex patterns to detect)
+# =========================
+# UNSAFE QUERY PATTERNS (regex)
+# =========================
 UNSAFE_PATTERNS = [
     r'\b(stop|quit|discontinue|cease)\s+(taking|medication|medicine|drug|prescription)',
     r'\b(diagnose|diagnosis|what\s+do\s+i\s+have|what\'s\s+wrong\s+with\s+me)',
@@ -39,14 +31,18 @@ UNSAFE_PATTERNS = [
     r'\b(emergency|urgent|severe\s+pain|chest\s+pain|difficulty\s+breathing)',
 ]
 
-# Escalation Triggers
+# =========================
+# ESCALATION TRIGGERS
+# =========================
 ESCALATION_KEYWORDS = [
     'emergency', 'urgent', 'severe', 'chest pain', 'difficulty breathing',
     'unconscious', 'bleeding heavily', 'allergic reaction', 'overdose',
     'suicidal', 'heart attack', 'stroke', 'seizure'
 ]
 
-# Response Templates
+# =========================
+# RESPONSE TEMPLATES
+# =========================
 ESCALATION_MESSAGE = (
     "I'm unable to confidently answer this based on your medical records. "
     "Please consult your doctor for medical advice."
@@ -63,7 +59,9 @@ UNSAFE_REQUEST_MESSAGE = (
     "that require professional consultation. Please speak with your doctor about: {topic}"
 )
 
-# Dietary Advice by Diagnosis
+# =========================
+# DIETARY GUIDELINES BY DIAGNOSIS
+# =========================
 DIETARY_GUIDELINES = {
     'upper respiratory tract infection': {
         'recommended': [
@@ -128,7 +126,9 @@ DIETARY_GUIDELINES = {
     }
 }
 
-# Medication Timing Guidelines
+# =========================
+# MEDICATION TIMING GUIDELINES
+# =========================
 MEDICATION_TIMING = {
     'with food': 'Take this medication with a meal or snack to reduce stomach upset.',
     'before food': 'Take this medication 30-60 minutes before eating for best absorption.',
@@ -140,44 +140,38 @@ MEDICATION_TIMING = {
     'once daily': 'Take this medication at the same time each day for consistency.'
 }
 
-# System Prompts
-SYSTEM_PROMPT_MEDICAL = """You are a helpful medical assistant chatbot for post-consultation patient support. 
+# =========================
+# SYSTEM PROMPTS (Hardened for Medical Safety)
+# =========================
+SYSTEM_PROMPT_MEDICAL = """[INST] You are a clinical AI assistant in a hospital patient portal. Respond DIRECTLY to the patient's question using ONLY the provided medical context. 
+Do not show your reasoning process. Just briefly answer in 2 to 3 sentences max.
 
-Your role is to:
-- Answer questions about the patient's existing prescriptions and medications
-- Provide medication guidance based on their current prescriptions
-- Offer diagnosis-aware dietary advice
-- Answer general post-consultation questions
-- Direct patients to schedule appointments when needed
+### CRITICAL OUTPUT RULES:
+• NEVER show reasoning, thinking steps, or internal monologue
+• NEVER start with "Okay", "Let me think", "Based on your records", or "They should"
+• ALWAYS address the patient directly as "you" and "your"
+• Keep responses to 2-3 concise sentences maximum
+• If the query is outside the provided context, respond EXACTLY with: "{escalation_message}"
 
-You MUST NOT:
-- Diagnose new conditions or diseases
-- Modify, change, or recommend stopping prescribed medications
-- Provide medical advice outside the patient's existing treatment plan
-- Invent or hallucinate medical information
-- Give advice on emergency situations (escalate immediately)
+### PATIENT CONTEXT (USE ONLY THIS INFORMATION):
+{patient_context}
 
-If you are uncertain or the question is outside your scope, respond with:
-"{escalation_message}"
+### PATIENT QUESTION:
+{question}
 
-Always base your responses on the patient's medical context provided. Be empathetic, clear, and concise.
-"""
+### YOUR RESPONSE (2-3 sentences, direct answer only):
+[/INST]"""
 
-SYSTEM_PROMPT_GENERAL = """You are a helpful assistant providing general health and lifestyle guidance.
+SYSTEM_PROMPT_GENERAL = """[INST] You are a helpful health assistant. Respond DIRECTLY to the user's question. Do not show your reasoning process. Just briefly answer in 2 to 3 sentences max
 
-You can help with:
-- General dietary advice and nutrition
-- Lifestyle recommendations
-- General health questions
-- Appointment scheduling guidance
+### OUTPUT RULES:
+• NEVER show reasoning or thinking steps
+• ALWAYS address the user as "you" and "your"
+• Keep responses friendly, concise (2-3 sentences), and actionable
+• Encourage consulting healthcare professionals for medical concerns
 
-You MUST NOT:
-- Diagnose medical conditions
-- Recommend specific medications
-- Provide emergency medical advice
-- Replace professional medical consultation
+### USER QUESTION:
+{question}
 
-Be helpful, empathetic, and always encourage consulting healthcare professionals for medical concerns.
-"""
-
-# Made with Bob
+### YOUR RESPONSE (2-3 sentences, direct answer only):
+[/INST]"""

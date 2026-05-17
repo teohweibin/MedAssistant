@@ -82,5 +82,47 @@
         "notes": "Raw"
       }
     ]
+  },
+  "P005": {
+    "patient_id": "P005",
+    "patient_name": "Suvan Ravi",
+    "patient_age": 23,
+    "blood_group": "AB+",
+    "allergies": [
+      "Vegetables"
+    ],
+    "symptom": "Bright lesions",
+    "diagnosis": "Suppa Cocacolastic",
+    "appointment_details": "2 follow up",
+    "dietary_restrictions": "No meat",
+    "prescription": [
+      {
+        "medication": "Penicilin",
+        "dosage": "2",
+        "duration": "3",
+        "notes": "2"
+      }
+    ]
+  },
+  "P006": {
+    "patient_id": "P006",
+    "patient_name": "Steven",
+    "patient_age": 40,
+    "blood_group": "O-",
+    "allergies": [
+      "Peanut"
+    ],
+    "symptom": "Hives",
+    "diagnosis": "Rash on skin",
+    "appointment_details": "12/5/2027",
+    "dietary_restrictions": "No dairy food",
+    "prescription": [
+      {
+        "medication": "Penicilin",
+        "dosage": "2",
+        "duration": "2 days",
+        "notes": "Before food"
+      }
+    ]
   }
 }

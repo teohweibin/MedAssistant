@@ -9,6 +9,10 @@ import os
 import sys
 import json
 import secrets
+import traceback
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Add model directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'model'))
@@ -32,7 +36,8 @@ def get_inference_service():
             inference_service = get_service()
             print("✓ Symptom analyzer loaded (using pre-trained BioMedCLIP)")
         except Exception as e:
-            print(f"⚠️ Warning: Could not load symptom analyzer: {e}")
+            print(f"⚠️ FATAL: Could not load symptom analyzer:")
+            print(traceback.format_exc())  # 👈 Prints exact line & error
             inference_service = False
     return inference_service if inference_service is not False else None
 
@@ -157,17 +162,23 @@ def get_medication_reminders(patient_id):
 @app.route('/')
 @login_required
 def index():
+    user_id = session.get('user_id')
     return render_template('schedule.html',
                          available_slots=available_slots,
-                         upcoming_tasks=upcoming_tasks)
+                         upcoming_tasks=upcoming_tasks,
+                         medication_reminders=get_medication_reminders(user_id),
+                         booked_appointments=get_patient_appointments(user_id))
 
 
 @app.route('/schedule')
 @login_required
 def schedule():
+    user_id = session.get('user_id')
     return render_template('schedule.html',
                          available_slots=available_slots,
-                         upcoming_tasks=upcoming_tasks)
+                         upcoming_tasks=upcoming_tasks,
+                         medication_reminders=get_medication_reminders(user_id),
+                         booked_appointments=get_patient_appointments(user_id))
 
 
 @app.route('/appointments')
@@ -468,10 +479,10 @@ def next_patient_id():
 def save_patient():
     data = request.get_json()
     patient_id = data.get('patient_id')
-
     if not patient_id or not data.get('patient_name'):
         return jsonify({'success': False, 'message': 'Patient ID and name are required'}), 400
 
+    # 1. Update memory
     patients_data[patient_id] = {
         'patient_id':           patient_id,
         'patient_name':         data.get('patient_name', ''),
@@ -485,17 +496,40 @@ def save_patient():
         'prescription':         data.get('prescription', [])
     }
 
-    # Persist to the JSON file
+    # 2. Save patients.json
     try:
-        filepath = os.path.join('data', 'patients.json')
-        with open(filepath, 'w') as f:
+        with open(os.path.join('data', 'patients.json'), 'w') as f:
             json.dump(patients_data, f, indent=2)
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Saved in memory but could not write file: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': f'Failed to save patient data: {str(e)}'}), 500
+
+    # 3. Auto-generate credentials if new patient
+    try:
+        creds_path = os.path.join('data', 'credentials.json')
+        creds_store = {}
+        try:
+            with open(creds_path, 'r') as f:
+                creds_store = json.load(f)
+        except:
+            creds_store = {"patients": {}, "doctors": {}}
+            
+        if 'patients' not in creds_store:
+            creds_store['patients'] = {}
+
+        if patient_id not in creds_store['patients']:
+            numeric_part = ''.join(filter(str.isdigit, patient_id)) or "000"
+            creds_store['patients'][patient_id] = {
+                'patient_id': patient_id,
+                'password': f"patient{numeric_part}"
+            }
+            with open(creds_path, 'w') as f:
+                json.dump(creds_store, f, indent=2)
+            global credentials_data
+            credentials_data = creds_store
+    except Exception as e:
+        print(f"⚠️ Credential sync failed (non-fatal): {e}")
 
     return jsonify({'success': True, 'patient_id': patient_id})
-
-
 
 # =========================
 # SYMPTOM ANALYZER (UNCHANGED)
@@ -576,56 +610,77 @@ def save_patient_contact():
 # CHATBOT API ENDPOINTS
 # =========================
 
-# Import chatbot service
-from chatbot.service import get_chatbot_service
+import secrets
+
+def _get_chatbot_service():
+    """Lazy-load chatbot service to prevent app startup crashes"""
+    try:
+        from chatbot.service import get_chatbot_service as _get_service
+        return _get_service()
+    except Exception as e:
+        print(f"⚠️ Chatbot service failed to load: {e}")
+        return None
 
 @app.route('/api/chatbot/query', methods=['POST'])
+@login_required  # Protect patient data access
 def chatbot_query():
-    """Process chatbot query"""
     try:
         data = request.get_json()
-        query = data.get('query', '')
+        query = data.get('query', '').strip()
         session_id = data.get('session_id')
-        
+
         if not query:
+            return jsonify({'success': False, 'message': 'Query is required'}), 400
+
+        # ✅ Use logged-in user instead of hardcoded P001
+        patient_id = session.get('user_id', 'P001')
+
+        # ✅ Generate session_id if frontend didn't provide one
+        if not session_id:
+            session_id = f"session_{patient_id}_{secrets.token_hex(8)}"
+
+        service = _get_chatbot_service()
+        if service is None:
             return jsonify({
-                'success': False,
-                'message': 'Query is required'
-            }), 400
-        
-        # Get chatbot service
-        chatbot = get_chatbot_service()
-        
-        # Process query with current patient ID
-        result = chatbot.process_query(
-            patient_id=CURRENT_PATIENT_ID,
+                'success': False, 
+                'message': 'Chatbot service is currently initializing or unavailable. Please try again in a moment.'
+            }), 503
+
+        result = service.process_query(
+            patient_id=patient_id,
             query=query,
             session_id=session_id
         )
         
         return jsonify(result)
-        
+
     except Exception as e:
+        print(f"🔴 Chatbot query error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
-            'success': False,
-            'error': str(e),
-            'message': 'An error occurred processing your query'
+            'success': False, 
+            'message': 'An error occurred processing your query',
+            'error': str(e)
         }), 500
 
 
 @app.route('/api/chatbot/status', methods=['GET'])
 def chatbot_status():
-    """Check chatbot service status"""
     try:
-        chatbot = get_chatbot_service()
-        
+        service = _get_chatbot_service()
+        if service is None:
+            return jsonify({
+                'available': False,
+                'message': 'Chatbot service failed to initialize'
+            }), 503
+            
         return jsonify({
             'available': True,
             'message': 'Chatbot service is ready',
-            'huggingface_available': chatbot.use_huggingface,
-            'mode': 'LLM' if chatbot.use_huggingface else 'Template'
+            'huggingface_available': getattr(service, 'use_huggingface', False),
+            'mode': 'LLM' if getattr(service, 'use_huggingface', False) else 'Template'
         })
-        
     except Exception as e:
         return jsonify({
             'available': False,
@@ -634,61 +689,43 @@ def chatbot_status():
 
 
 @app.route('/api/chatbot/history', methods=['GET'])
+@login_required
 def chatbot_history():
-    """Get conversation history"""
     try:
         session_id = request.args.get('session_id')
-        
         if not session_id:
-            return jsonify({
-                'success': False,
-                'message': 'Session ID is required'
-            }), 400
-        
-        chatbot = get_chatbot_service()
-        history = chatbot.get_conversation_history(session_id)
-        
-        return jsonify({
-            'success': True,
-            'history': history,
-            'session_id': session_id
-        })
-        
+            # Fallback to user-based session if not provided
+            patient_id = session.get('user_id', 'P001')
+            session_id = f"session_{patient_id}_default"
+            
+        service = _get_chatbot_service()
+        if service is None:
+            return jsonify({'success': False, 'message': 'Service unavailable'}), 503
+            
+        history = service.get_conversation_history(session_id)
+        return jsonify({'success': True, 'history': history, 'session_id': session_id})
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/chatbot/clear', methods=['POST'])
+@login_required
 def chatbot_clear():
-    """Clear conversation history"""
     try:
         data = request.get_json()
         session_id = data.get('session_id')
-        
         if not session_id:
-            return jsonify({
-                'success': False,
-                'message': 'Session ID is required'
-            }), 400
-        
-        chatbot = get_chatbot_service()
-        chatbot.clear_conversation_history(session_id)
-        
-        return jsonify({
-            'success': True,
-            'message': 'Conversation history cleared'
-        })
-        
+            patient_id = session.get('user_id', 'P001')
+            session_id = f"session_{patient_id}_default"
+            
+        service = _get_chatbot_service()
+        if service is None:
+            return jsonify({'success': False, 'message': 'Service unavailable'}), 503
+            
+        service.clear_conversation_history(session_id)
+        return jsonify({'success': True, 'message': 'Conversation history cleared'})
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

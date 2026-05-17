@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-# ibm_bob_hackathon_clinical_ai
-=======
 # Clinical AI Platform with Symptom Analyzer
 
 A comprehensive clinical dashboard with AI-powered symptom analysis using BioMedCLIP + LoRA fine-tuning.
