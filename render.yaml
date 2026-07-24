@@ -1,6 +1,7 @@
 services:
   - type: web
     name: clinical-ai
+    plan: free
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
