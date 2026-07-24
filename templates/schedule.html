@@ -41,11 +41,11 @@
         const currentPath = window.location.pathname;
 
         if (role === 'patient' && currentPath === '/docprofile') {
-            window.location.href = '/';
+            window.location.href = '/schedule';
             return;
         }
 
-        if (role === 'doctor' && currentPath === '/') {
+        if (role === 'doctor' && currentPath === '/schedule') {
             window.location.href = '/docprofile';
             return;
         }
@@ -53,7 +53,7 @@
         const nav = document.getElementById('main-nav');
 
         const patientLinks = `
-            <a href="/" class="nav-link ${currentPath === '/' ? 'active' : ''}">Schedule</a>
+            <a href="/schedule" class="nav-link ${currentPath === '/schedule' ? 'active' : ''}">Schedule</a>
             <a href="/appointments" class="nav-link ${currentPath === '/appointments' ? 'active' : ''}">My Appointments</a>
             <a href="/profile" class="nav-link ${currentPath === '/profile' ? 'active' : ''}">Profile</a>
         `;

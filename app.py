@@ -249,7 +249,7 @@ def login():
         if session.get('role') == 'doctor':
             return redirect(url_for('docprofile'))
         else:
-            return redirect(url_for('index'))
+            return redirect(url_for('schedule'))
     return render_template('login.html')
 
 
@@ -289,7 +289,7 @@ def authenticate():
     session['name'] = user_name
     session['profile'] = user_profile
 
-    redirect_url = '/docprofile' if role == 'doctor' else '/'
+    redirect_url = '/docprofile' if role == 'doctor' else '/schedule'
 
     return jsonify({
         'success': True,
