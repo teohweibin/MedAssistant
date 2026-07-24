@@ -9,13 +9,9 @@ import os
 import sys
 import json
 import secrets
-<<<<<<< HEAD
 import traceback
 from dotenv import load_dotenv
 
-=======
-from dotenv import load_dotenv
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 load_dotenv()
 
 # Add model directory to path
@@ -25,7 +21,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Session configuration
-app.secret_key = secrets.token_hex(32)
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
 
@@ -158,45 +154,24 @@ def get_medication_reminders(patient_id):
 # =========================
 
 @app.route('/')
-@login_required
 def index():
-    user_id = session.get('user_id')
-<<<<<<< HEAD
-    return render_template('schedule.html',
-                         available_slots=available_slots,
-                         upcoming_tasks=upcoming_tasks,
-                         medication_reminders=get_medication_reminders(user_id),
-                         booked_appointments=get_patient_appointments(user_id))
-=======
-    medication_reminders = get_medication_reminders(user_id)
-    booked_appointments = get_patient_appointments(user_id)
-    return render_template('schedule.html',
-                         available_slots=available_slots,
-                         upcoming_tasks=upcoming_tasks,
-                         medication_reminders=medication_reminders,
-                         booked_appointments=booked_appointments)
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
+    return render_template('landing.html')
+
+
+@app.route('/healthz')
+def healthz():
+    return jsonify({'status': 'ok'}), 200
 
 
 @app.route('/schedule')
 @login_required
 def schedule():
     user_id = session.get('user_id')
-<<<<<<< HEAD
     return render_template('schedule.html',
                          available_slots=available_slots,
                          upcoming_tasks=upcoming_tasks,
                          medication_reminders=get_medication_reminders(user_id),
                          booked_appointments=get_patient_appointments(user_id))
-=======
-    medication_reminders = get_medication_reminders(user_id)
-    booked_appointments = get_patient_appointments(user_id)
-    return render_template('schedule.html',
-                         available_slots=available_slots,
-                         upcoming_tasks=upcoming_tasks,
-                         medication_reminders=medication_reminders,
-                         booked_appointments=booked_appointments)
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 
 
 @app.route('/appointments')
@@ -464,10 +439,7 @@ def save_patient():
         'prescription':         data.get('prescription', [])
     }
 
-<<<<<<< HEAD
     # 2. Save patients.json
-=======
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
     try:
         with open(os.path.join('data', 'patients.json'), 'w') as f:
             json.dump(patients_data, f, indent=2)
@@ -502,10 +474,6 @@ def save_patient():
 
     return jsonify({'success': True, 'patient_id': patient_id})
 
-<<<<<<< HEAD
-=======
-
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 # =========================
 # SYMPTOM ANALYZER
 # =========================
@@ -578,7 +546,6 @@ def save_patient_contact():
 # FIXED: use session user_id instead of hardcoded CURRENT_PATIENT_ID
 # =========================
 
-<<<<<<< HEAD
 import secrets
 
 def _get_chatbot_service():
@@ -589,17 +556,10 @@ def _get_chatbot_service():
     except Exception as e:
         print(f"⚠️ Chatbot service failed to load: {e}")
         return None
-=======
-from chatbot.service import get_chatbot_service
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 
 
 @app.route('/api/chatbot/query', methods=['POST'])
-<<<<<<< HEAD
 @login_required  # Protect patient data access
-=======
-@login_required
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 def chatbot_query():
     try:
         data = request.get_json()
@@ -609,7 +569,6 @@ def chatbot_query():
         if not query:
             return jsonify({'success': False, 'message': 'Query is required'}), 400
 
-<<<<<<< HEAD
         # ✅ Use logged-in user instead of hardcoded P001
         patient_id = session.get('user_id', 'P001')
 
@@ -625,13 +584,6 @@ def chatbot_query():
             }), 503
 
         result = service.process_query(
-=======
-        # FIXED: use the logged-in patient's ID from session, not the hardcoded constant
-        patient_id = session.get('user_id', CURRENT_PATIENT_ID)
-
-        chatbot = get_chatbot_service()
-        result = chatbot.process_query(
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
             patient_id=patient_id,
             query=query,
             session_id=session_id
@@ -653,7 +605,6 @@ def chatbot_query():
 @app.route('/api/chatbot/status', methods=['GET'])
 def chatbot_status():
     try:
-<<<<<<< HEAD
         service = _get_chatbot_service()
         if service is None:
             return jsonify({
@@ -661,9 +612,6 @@ def chatbot_status():
                 'message': 'Chatbot service failed to initialize'
             }), 503
             
-=======
-        chatbot = get_chatbot_service()
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
         return jsonify({
             'available': True,
             'message': 'Chatbot service is ready',
@@ -680,7 +628,6 @@ def chatbot_history():
     try:
         session_id = request.args.get('session_id')
         if not session_id:
-<<<<<<< HEAD
             # Fallback to user-based session if not provided
             patient_id = session.get('user_id', 'P001')
             session_id = f"session_{patient_id}_default"
@@ -691,14 +638,6 @@ def chatbot_history():
             
         history = service.get_conversation_history(session_id)
         return jsonify({'success': True, 'history': history, 'session_id': session_id})
-=======
-            return jsonify({'success': False, 'message': 'Session ID is required'}), 400
-
-        chatbot = get_chatbot_service()
-        history = chatbot.get_conversation_history(session_id)
-        return jsonify({'success': True, 'history': history, 'session_id': session_id})
-
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -710,7 +649,6 @@ def chatbot_clear():
         data = request.get_json()
         session_id = data.get('session_id')
         if not session_id:
-<<<<<<< HEAD
             patient_id = session.get('user_id', 'P001')
             session_id = f"session_{patient_id}_default"
             
@@ -720,17 +658,13 @@ def chatbot_clear():
             
         service.clear_conversation_history(session_id)
         return jsonify({'success': True, 'message': 'Conversation history cleared'})
-=======
-            return jsonify({'success': False, 'message': 'Session ID is required'}), 400
-
-        chatbot = get_chatbot_service()
-        chatbot.clear_conversation_history(session_id)
-        return jsonify({'success': True, 'message': 'Conversation history cleared'})
-
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(
+        debug=os.environ.get('FLASK_DEBUG') == '1',
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', '5000')),
+    )

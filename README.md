@@ -40,6 +40,18 @@ pip install -r requirements.txt
 python app.py
 ```
 
+### Render deployment (template fallback)
+
+This repository includes `render.yaml` for a lightweight Flask deployment. Connect the repository in Render as a Blueprint, then deploy. The service uses `gunicorn`, binds to Render's `PORT`, and exposes `/healthz` for health checks.
+
+Set a long random `SECRET_KEY` in Render's environment-variable settings. `GROQ_API_KEY` is optional; without it, the chatbot uses template fallback. The current JSON files under `data/` are suitable for a demo only: Render's default filesystem is ephemeral, so replace them with a database before storing real or persistent data.
+
+The symptom-image model and training dependencies are excluded from the web deployment to keep builds lightweight. Install them locally when needed with:
+
+```bash
+pip install -r requirements-ml.txt
+```
+
 ### Symptom Analyzer Setup
 
 For detailed setup instructions including model training, see [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
@@ -157,4 +169,3 @@ This project is for educational and demonstration purposes.
 - [HAM10000 Dataset](https://doi.org/10.7910/DVN/DBW86T)
 - [LoRA: Low-Rank Adaptation](https://arxiv.org/abs/2106.09685)
 - [Open-CLIP](https://github.com/mlfoundations/open_clip)
->>>>>>> Stashed changes

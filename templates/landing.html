@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedAssistant — Clinical care, made clearer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="landing-body">
+    <header class="landing-nav landing-reveal landing-reveal--nav">
+        <a class="landing-brand" href="/" aria-label="MedAssistant home">
+            <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="14" y="8" width="4" height="16" fill="#cc785c"/><rect x="8" y="14" width="16" height="4" fill="#cc785c"/><circle cx="16" cy="16" r="14" stroke="#cc785c" stroke-width="2"/></svg>
+            <span>MedAssistant</span>
+        </a>
+        <a class="btn btn-primary landing-login" href="{{ url_for('login') }}">Sign in</a>
+    </header>
+
+    <main>
+        <section class="landing-hero">
+            <div class="landing-copy landing-reveal landing-reveal--hero">
+                <p class="landing-eyebrow">YOUR PERSONAL CLINICAL COMPANION</p>
+                <h1>Care feels clearer when everything is in one place.</h1>
+                <p class="landing-lede">MedAssistant helps patients stay close to their care plan — from appointments and medications to follow-up support.</p>
+                <div class="landing-actions">
+                    <a class="btn btn-primary" href="{{ url_for('login') }}">Enter your portal <span aria-hidden="true">→</span></a>
+                    <a class="landing-text-link" href="#how-it-helps">See how it helps</a>
+                </div>
+                <p class="landing-note">For post-consultation support. Not a replacement for clinical advice.</p>
+            </div>
+
+            <div class="landing-preview landing-reveal landing-reveal--preview" aria-label="Preview of the patient care dashboard">
+                <div class="preview-topbar"><span class="preview-dot"></span><span>Today’s care plan</span><span class="preview-avatar">MS</span></div>
+                <div class="preview-content">
+                    <div><p class="preview-label">NEXT APPOINTMENT</p><h3>Follow-up consultation</h3><p class="preview-muted">Tuesday, 10:00 AM · Dr. Tan</p></div>
+                    <div class="preview-divider"></div>
+                    <div class="preview-row"><span class="preview-icon teal">✓</span><div><strong>Medication reminder</strong><p>Amoxicillin · with breakfast</p></div><span class="preview-time">08:00</span></div>
+                    <div class="preview-row"><span class="preview-icon amber">✦</span><div><strong>Ask MedAssistant</strong><p>Get guidance from your care record</p></div><span class="preview-arrow">→</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-trust landing-scroll-reveal"><span>PERSONALISED TO YOUR CARE</span><i></i><span>DESIGNED WITH SAFETY IN MIND</span><i></i><span>BUILT FOR CLEAR FOLLOW-UP</span></section>
+
+        <section class="landing-features landing-scroll-reveal" id="how-it-helps">
+            <div class="landing-section-heading"><p class="landing-eyebrow">HOW IT HELPS</p><h2>Everything you need after an appointment.</h2></div>
+            <div class="landing-feature-grid">
+                <article><span class="feature-number">01</span><h3>Keep your care plan close</h3><p>Review appointments, prescriptions, allergies and follow-up tasks in one calm, organised view.</p></article>
+                <article><span class="feature-number">02</span><h3>Understand your next step</h3><p>Use the clinical chat assistant for record-based help, with clear safety boundaries when a clinician is needed.</p></article>
+                <article><span class="feature-number">03</span><h3>Track symptoms thoughtfully</h3><p>Explore image-based symptom analysis and practical guidance designed to support, not replace, professional care.</p></article>
+            </div>
+        </section>
+
+        <section class="landing-cta landing-scroll-reveal"><div><p class="landing-eyebrow">READY WHEN YOU ARE</p><h2>Bring more confidence to every follow-up.</h2></div><a class="btn btn-primary" href="{{ url_for('login') }}">Sign in to MedAssistant</a></section>
+    </main>
+
+    <footer class="landing-footer"><span>MedAssistant © 2026</span><span>Clinical proof of concept · Educational use only</span></footer>
+    <script>
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.14 });
+
+        document.querySelectorAll('.landing-scroll-reveal').forEach((section) => revealObserver.observe(section));
+
+        document.querySelectorAll('a[href]').forEach((link) => {
+            const target = link.getAttribute('href');
+            if (!target || target.startsWith('#') || link.target === '_blank') return;
+            link.addEventListener('click', (event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                document.body.classList.add('is-leaving');
+                window.setTimeout(() => { window.location.href = target; }, 180);
+            });
+        });
+    </script>
+</body>
+</html>

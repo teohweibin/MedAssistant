@@ -60,11 +60,10 @@ class ChatbotService:
         # Check LLM availability in background
         threading.Thread(target=self._init_llm_check, daemon=True).start()
     
-<<<<<<< HEAD
     def _init_llm_check(self):
         """Test Groq API connectivity"""
         if not self.groq_client:
-            print("⚠️ Groq not configured. Using template-based responses.")
+            print("Groq not configured. Using template-based responses.")
             return
         try:
             # Quick test query
@@ -76,48 +75,6 @@ class ChatbotService:
             )
             self.llm_available = True
             print(f"✓ LLM mode enabled ({PRIMARY_MODEL})")
-=======
-    def _check_huggingface_available(self) -> bool:
-        """Check if HuggingFace API is available and token is set"""
-        # Re-read from environment at check time — this catches the case where
-        # load_dotenv() in app.py ran AFTER config.py was first imported and
-        # HF_API_TOKEN was captured as '' from the module-level assignment.
-        import os
-        token = os.environ.get('HF_API_TOKEN', '') or HF_API_TOKEN
-
-        if not token:
-            print("⚠️ HuggingFace API token not set. Using template-based responses.")
-            print("   Fix: add HF_API_TOKEN=hf_xxxx to your .env file in the project root.")
-            return False
-
-        try:
-            # Test API connectivity by sending an empty string or basic payload to the model endpoint via POST
-            headers = {"Authorization": f"Bearer {token}"}
-            payload = {"inputs": "ping"}
-            
-            response = requests.post(
-                f"{HF_API_BASE_URL}/{PRIMARY_MODEL}",
-                headers=headers,
-                json=payload,
-                timeout=5
-            )
-            
-            # 200 means success, 503 means model is loading (token is valid)
-            if response.status_code in [200, 503]:
-                print("✓ HuggingFace API connected successfully")
-                return True
-            elif response.status_code == 401:
-                print("⚠️ HuggingFace token is invalid or expired (401 Unauthorized).")
-                print("   Fix: check your HF_API_TOKEN value at https://huggingface.co/settings/tokens")
-                return False
-            elif response.status_code == 403:
-                print(f"⚠️ HuggingFace token does not have access to {PRIMARY_MODEL} (403 Forbidden).")
-                print("   Fix: accept the model licence at https://huggingface.co/BioMistral/BioMistral-7B")
-                return False
-            else:
-                print(f"⚠️ HuggingFace API returned status {response.status_code}. Using template-based responses.")
-                return False
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
         except Exception as e:
             print(f"⚠️ LLM API test failed: {e}. Using template-based responses.")
     
@@ -303,85 +260,6 @@ class ChatbotService:
         print("⚠️ All LLM attempts failed. Using template fallback.")
         return self._generate_fallback_response(query, query_type, patient_context)
     
-<<<<<<< HEAD
-=======
-    def _call_huggingface_api(self, model: str, prompt: str) -> Optional[str]:
-        """
-        Call HuggingFace Inference API
-        
-        Args:
-            model: Model name/path
-            prompt: Full prompt text
-            
-        Returns:
-            Generated text or None if failed
-        """
-        import os
-        token = os.environ.get('HF_API_TOKEN', '') or HF_API_TOKEN
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "temperature": MODEL_TEMPERATURE,
-                "max_new_tokens": MAX_TOKENS,
-                "return_full_text": False,
-                "do_sample": True,
-                "top_p": 0.9
-            }
-        }
-        
-        try:
-            response = requests.post(
-                f"{HF_API_BASE_URL}/{model}",
-                headers=headers,
-                json=payload,
-                timeout=REQUEST_TIMEOUT
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                # Handle different response formats
-                if isinstance(result, list) and len(result) > 0:
-                    generated_text = result[0].get('generated_text', '')
-                elif isinstance(result, dict):
-                    generated_text = result.get('generated_text', '')
-                else:
-                    generated_text = str(result)
-                
-                return generated_text.strip()
-            
-            elif response.status_code == 503:
-                # Model is loading
-                error_data = response.json()
-                estimated_time = error_data.get('estimated_time', 20)
-                print(f"⚠️ Model is loading. Estimated time: {estimated_time}s")
-                if estimated_time < 30:
-                    time.sleep(min(estimated_time + 5, 30))
-                    return self._call_huggingface_api(model, prompt)
-                return None
-            
-            elif response.status_code == 429:
-                # Rate limit exceeded
-                print("⚠️ Rate limit exceeded. Please wait before making more requests.")
-                return None
-            
-            else:
-                print(f"⚠️ HuggingFace API error: {response.status_code}")
-                print(f"   Response: {response.text[:200]}")
-                return None
-        
-        except requests.exceptions.Timeout:
-            print("⚠️ Request timeout. Model may be overloaded.")
-            return None
-        except Exception as e:
-            print(f"⚠️ Error calling HuggingFace API: {e}")
-            return None
-    
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
     def _apply_rate_limit(self):
         current_time = time.time()
         time_since_last = current_time - self.last_request_time

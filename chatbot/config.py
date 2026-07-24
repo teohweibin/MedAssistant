@@ -1,14 +1,6 @@
-<<<<<<< HEAD
-=======
-"""
-Chatbot Configuration (FIXED FOR HF INFERENCE STABILITY)
-"""
-
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 import os
 from dotenv import load_dotenv
 
-<<<<<<< HEAD
 # Groq Configuration
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_xxx')  
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
@@ -32,35 +24,6 @@ MAX_CONVERSATION_LENGTH = 20     # Maximum messages in history
 # =========================
 # UNSAFE QUERY PATTERNS (regex)
 # =========================
-=======
-load_dotenv()
-
-# HuggingFace
-HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
-HF_API_BASE_URL = "https://api-inference.huggingface.co/models"
-
-# ✅ Stable inference-safe models
-# BioMistral - Medical domain specialized model
-PRIMARY_MODEL = "BioMistral/BioMistral-7B"
-# Alternative medical models
-FALLBACK_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
-
-# Model Parameters
-MODEL_TEMPERATURE = 0.3
-MAX_TOKENS = 500
-REQUEST_TIMEOUT = 40
-MAX_RETRIES = 2
-
-# Rate Limiting
-RATE_LIMIT_DELAY = 1.0
-
-# Safety thresholds
-CONFIDENCE_THRESHOLD = 0.70
-ESCALATION_THRESHOLD = 0.50
-MAX_CONVERSATION_LENGTH = 20
-
-# Unsafe patterns
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 UNSAFE_PATTERNS = [
     r'\b(stop|quit|discontinue)\s+(taking|medication|drug)',
     r'\b(diagnose|what\s+do\s+i\s+have|what\'s\s+wrong)',
@@ -69,24 +32,17 @@ UNSAFE_PATTERNS = [
     r'\b(emergency|chest\s+pain|difficulty\s+breathing)',
 ]
 
-<<<<<<< HEAD
 # =========================
 # ESCALATION TRIGGERS
 # =========================
-=======
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 ESCALATION_KEYWORDS = [
     "emergency", "chest pain", "difficulty breathing",
     "unconscious", "stroke", "seizure", "overdose"
 ]
 
-<<<<<<< HEAD
 # =========================
 # RESPONSE TEMPLATES
 # =========================
-=======
-# Messages
->>>>>>> a50b2e810c74a7918ed719ee04306251dbecb18b
 ESCALATION_MESSAGE = (
     "I'm unable to confidently answer this. Please consult a healthcare professional."
 )
